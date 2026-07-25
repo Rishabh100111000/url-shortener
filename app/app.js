@@ -17,6 +17,11 @@ app.use(helmet());
 // Serve frontend
 app.use(express.static(path.join(__dirname, "../public")));
 
+// Default route
+app.get("/", (req, res) => {
+    res.redirect("/login.html");
+});
+
 mongoose.connect(process.env.MONGO_URI)
     .then(() => console.log("MongoDB Connected"))
     .catch(err => console.log(err));
