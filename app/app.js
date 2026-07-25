@@ -16,6 +16,9 @@ app.use(helmet());
 
 // Serve frontend
 app.use(express.static(path.join(__dirname, "../public")));
+app.get("/", (req, res) => {
+    res.redirect("/login.html");
+});
 
 // Default route
 app.get("/", (req, res) => {
