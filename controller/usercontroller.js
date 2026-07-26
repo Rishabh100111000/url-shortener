@@ -1,7 +1,7 @@
 const USER = require("../model/USER");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const transporter = require("../configure/mail");
+const { sendEmail } = require("../configure/mail");
 
 // ====================== REGISTER USER ======================
 
@@ -46,12 +46,11 @@ const registerUser = async (req, res) => {
             }
         );
 
-        // Verification Link (Render URL)
-        const verificationLink = `https://url-shortener-mvff.onrender.com/user/verify/${verificationToken}`;
+        const baseUrl = process.env.BASE_URL || "http://localhost:3000";
+        const verificationLink = `${baseUrl}/user/verify/${verificationToken}`;
 
-        // Send verification email
-        const info = await transporter.sendMail({
-            from: process.env.EMAIL_USER,
+        // Send verification email via Resend HTTP API
+        const info = await sendEmail({
             to: email,
             subject: "Verify Your Email",
             html: `
@@ -121,11 +120,12 @@ const verifyEmail = async (req, res) => {
             return res.status(404).send("User not found");
         }
 
+        const baseUrl = process.env.BASE_URL || "http://localhost:3000";
+
         if (user.verified) {
             return res.send(`
                 <h2>Email already verified ✅</h2>
-
-                <a href="https://url-shortener-mvff.onrender.com/login.html">
+                <a href="${baseUrl}/login.html">
                     Go to Login
                 </a>
             `);
@@ -140,7 +140,7 @@ const verifyEmail = async (req, res) => {
 
             <p>Your account has been activated.</p>
 
-            <a href="https://url-shortener-mvff.onrender.com/login.html">
+            <a href="${baseUrl}/login.html">
                 Click here to Login
             </a>
         `);
@@ -185,6 +185,8 @@ const loginUser = async (req, res) => {
 
         }
 
+        // Check Email Verification
+
         if (!user.verified) {
 
             return res.status(403).json({
@@ -218,8 +220,11 @@ const loginUser = async (req, res) => {
         );
 
         return res.status(200).json({
+
             message: "Login successful",
+
             token,
+
         });
 
     } catch (err) {
@@ -227,7 +232,9 @@ const loginUser = async (req, res) => {
         console.error(err);
 
         return res.status(500).json({
+
             message: err.message,
+
         });
 
     }

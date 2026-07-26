@@ -12,24 +12,30 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
-app.use(helmet());
 
-// Serve frontend
+// Configure Helmet to allow frontend assets and cross-origin requests
+app.use(
+    helmet({
+        contentSecurityPolicy: false,
+    })
+);
+
+// Serve frontend static assets from public directory
 app.use(express.static(path.join(__dirname, "../public")));
-app.get("/", (req, res) => {
-    res.redirect("/login.html");
-});
 
-// Default route
-app.get("/", (req, res) => {
-    res.redirect("/login.html");
-});
-
-mongoose.connect(process.env.MONGO_URI)
-    .then(() => console.log("MongoDB Connected"))
-    .catch(err => console.log(err));
-
+// API Routes
 app.use("/user", userRoutes);
 app.use("/url", urlRoutes);
+
+// Default Root Route -> Redirect to login page
+app.get("/", (req, res) => {
+    res.redirect("/login.html");
+});
+
+// Database Connection
+mongoose
+    .connect(process.env.MONGO_URI)
+    .then(() => console.log("MongoDB Connected"))
+    .catch((err) => console.error("MongoDB Connection Error:", err));
 
 module.exports = app;
