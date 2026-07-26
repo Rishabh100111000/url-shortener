@@ -46,10 +46,11 @@ const registerUser = async (req, res) => {
             }
         );
 
-        const verificationLink = `http://localhost:3000/user/verify/${verificationToken}`;
+        // Verification Link (Render URL)
+        const verificationLink = `https://url-shortener-mvff.onrender.com/user/verify/${verificationToken}`;
 
         // Send verification email
-     const info=   await transporter.sendMail({
+        const info = await transporter.sendMail({
             from: process.env.EMAIL_USER,
             to: email,
             subject: "Verify Your Email",
@@ -82,10 +83,11 @@ const registerUser = async (req, res) => {
                 </a>
             `,
         });
+
         console.log("=================================");
-console.log("Mail Response:");
-console.log(info);
-console.log("=================================");
+        console.log("Mail Response:");
+        console.log(info);
+        console.log("=================================");
 
         res.status(201).json({
             message: "Registration successful. Please verify your email.",
@@ -122,9 +124,10 @@ const verifyEmail = async (req, res) => {
         if (user.verified) {
             return res.send(`
                 <h2>Email already verified ✅</h2>
- <a href="http://localhost:3000/login.html">
-    Go to Login
-</a>
+
+                <a href="https://url-shortener-mvff.onrender.com/login.html">
+                    Go to Login
+                </a>
             `);
         }
 
@@ -137,9 +140,9 @@ const verifyEmail = async (req, res) => {
 
             <p>Your account has been activated.</p>
 
-           <a href="http://localhost:3000/login.html">
-    Click here to Login
-</a>
+            <a href="https://url-shortener-mvff.onrender.com/login.html">
+                Click here to Login
+            </a>
         `);
 
     } catch (err) {
@@ -182,8 +185,6 @@ const loginUser = async (req, res) => {
 
         }
 
-        // Check Email Verification
-
         if (!user.verified) {
 
             return res.status(403).json({
@@ -217,11 +218,8 @@ const loginUser = async (req, res) => {
         );
 
         return res.status(200).json({
-
             message: "Login successful",
-
             token,
-
         });
 
     } catch (err) {
@@ -229,14 +227,11 @@ const loginUser = async (req, res) => {
         console.error(err);
 
         return res.status(500).json({
-
             message: err.message,
-
         });
 
     }
 
-   
 };
 
 module.exports = {
