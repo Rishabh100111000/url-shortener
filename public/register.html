@@ -13,6 +13,7 @@
             justify-content: center;
             align-items: center;
             height: 100vh;
+            margin: 0;
         }
 
         .container {
@@ -20,11 +21,12 @@
             padding: 30px;
             border-radius: 10px;
             width: 350px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, .2);
+            box-shadow: 0 0 10px rgba(0,0,0,.2);
         }
 
         h2 {
             text-align: center;
+            margin-top: 0;
         }
 
         input {
@@ -38,6 +40,15 @@
             width: 100%;
             padding: 10px;
             cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
         }
 
         p {
@@ -46,50 +57,61 @@
 
         a {
             text-decoration: none;
+            color: #007bff;
         }
     </style>
 </head>
 <body>
 
 <div class="container">
+    <h2>Register</h2>
 
-<h2>Register</h2>
+    <form id="registerForm">
+        <input type="text" id="name" placeholder="Enter Name" required>
+        <input type="email" id="email" placeholder="Enter Email" required>
+        <input type="password" id="password" placeholder="Enter Password" required>
+        <button type="submit">Register</button>
+    </form>
 
-<form id="registerForm">
-
-<input
-type="text"
-id="name"
-placeholder="Enter Name"
-required>
-
-<input
-type="email"
-id="email"
-placeholder="Enter Email"
-required>
-
-<input
-type="password"
-id="password"
-placeholder="Enter Password"
-required>
-
-<button type="submit">
-Register
-</button>
-
-</form>
-
-<p>
-Already have an account?
-<a href="login.html">Login</a>
-</p>
-
+    <p>Already have an account? <a href="login.html">Login</a></p>
 </div>
 
-<!-- Fixed script src path to point to root register.js -->
-<script src="js/register.js"></script>
+<!-- Inline JavaScript so we never get a 404 script error again -->
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const form = document.getElementById("registerForm");
+
+    form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const name = document.getElementById("name").value;
+        const email = document.getElementById("email").value;
+        const password = document.getElementById("password").value;
+
+        try {
+            const response = await fetch(`${window.location.origin}/user/register`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ name, email, password })
+            });
+
+            const data = await response.json().catch(() => ({}));
+
+            if (response.ok) {
+                alert("Registration Successful!\nPlease check your email to verify your account.");
+                window.location.href = "login.html";
+            } else {
+                alert(data.message || data.error || `Server error (Status ${response.status})`);
+            }
+        } catch (err) {
+            console.error("Fetch Error:", err);
+            alert("Network Error: " + err.message);
+        }
+    });
+});
+</script>
 
 </body>
 </html>
