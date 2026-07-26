@@ -21,16 +21,15 @@ document.addEventListener("DOMContentLoaded", () => {
                 const data = await response.json().catch(() => ({}));
 
                 if (response.ok) {
-                    alert("Registration Successful! Please check your email.");
+                    alert("Registration Successful!\nPlease check your email to verify your account.");
                     window.location.href = "login.html";
                 } else {
-                    alert(data.message || data.error || `Error: Status ${response.status}`);
+                    alert(data.message || data.error || `Server error (Status ${response.status})`);
                 }
             } catch (err) {
-                console.error("Fetch catch block error:", err);
-                alert("Network error: " + err.message);
+                console.error("Fetch Error:", err);
+                alert("Network Error: " + err.message);
             }
         });
     }
-});
 });
