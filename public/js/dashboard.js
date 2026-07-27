@@ -68,7 +68,8 @@ document.addEventListener("DOMContentLoaded", () => {
             console.log("Server response:", data);
 
             if (response.ok) {
-                const shortUrl = `${window.location.origin}/url/${data.shortCode}`;
+                // FIXED: Removed /url/ prefix to match router.get("/:shortCode")
+                const shortUrl = `${window.location.origin}/${data.shortCode}`;
                 
                 if (resultDiv) {
                     resultDiv.innerHTML = `
