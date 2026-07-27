@@ -35,18 +35,21 @@ const registerUser = async (req, res) => {
             password: hashedPassword,
         });
 
+        // Safe fallback for JWT secret in case process.env.JWT_SECRET is missing
+        const jwtSecret = process.env.JWT_SECRET || "supersecretdefaultkey123";
+
         // Generate verification token
         const verificationToken = jwt.sign(
             {
                 id: user._id,
             },
-            process.env.JWT_SECRET,
+            jwtSecret,
             {
                 expiresIn: "1d",
             }
         );
 
-        const baseUrl = process.env.BASE_URL || "http://localhost:3000";
+        const baseUrl = process.env.BASE_URL || `${req.protocol}://${req.get("host")}`;
         const verificationLink = `${baseUrl}/user/verify/${verificationToken}`;
 
         // Send verification email via Resend HTTP API
@@ -88,14 +91,14 @@ const registerUser = async (req, res) => {
         console.log(info);
         console.log("=================================");
 
-        res.status(201).json({
+        return res.status(201).json({
             message: "Registration successful. Please verify your email.",
         });
 
     } catch (err) {
-        console.error(err);
+        console.error("Registration Error:", err);
 
-        res.status(500).json({
+        return res.status(500).json({
             message: err.message,
         });
     }
@@ -104,15 +107,11 @@ const registerUser = async (req, res) => {
 // ====================== VERIFY EMAIL ======================
 
 const verifyEmail = async (req, res) => {
-
     try {
-
         const { token } = req.params;
+        const jwtSecret = process.env.JWT_SECRET || "supersecretdefaultkey123";
 
-        const decoded = jwt.verify(
-            token,
-            process.env.JWT_SECRET
-        );
+        const decoded = jwt.verify(token, jwtSecret);
 
         const user = await USER.findById(decoded.id);
 
@@ -120,7 +119,7 @@ const verifyEmail = async (req, res) => {
             return res.status(404).send("User not found");
         }
 
-        const baseUrl = process.env.BASE_URL || "http://localhost:3000";
+        const baseUrl = process.env.BASE_URL || `${req.protocol}://${req.get("host")}`;
 
         if (user.verified) {
             return res.send(`
@@ -146,53 +145,41 @@ const verifyEmail = async (req, res) => {
         `);
 
     } catch (err) {
-
-        console.error(err);
+        console.error("Verification Error:", err);
 
         return res.status(400).send(`
             <h2>Verification Failed ❌</h2>
 
             <p>Invalid or Expired Verification Link.</p>
         `);
-
     }
-
 };
 
 // ====================== LOGIN USER ======================
 
 const loginUser = async (req, res) => {
-
     try {
-
         const { email, password } = req.body;
 
         if (!email || !password) {
-
             return res.status(400).json({
                 message: "Email and password are required",
             });
-
         }
 
         const user = await USER.findOne({ email });
 
         if (!user) {
-
             return res.status(404).json({
                 message: "User not found",
             });
-
         }
 
         // Check Email Verification
-
         if (!user.verified) {
-
             return res.status(403).json({
                 message: "Please verify your email first.",
             });
-
         }
 
         const isPasswordCorrect = await bcrypt.compare(
@@ -201,44 +188,36 @@ const loginUser = async (req, res) => {
         );
 
         if (!isPasswordCorrect) {
-
             return res.status(401).json({
                 message: "Invalid credentials",
             });
-
         }
+
+        const jwtSecret = process.env.JWT_SECRET || "supersecretdefaultkey123";
 
         const token = jwt.sign(
             {
                 id: user._id,
                 email: user.email,
             },
-            process.env.JWT_SECRET,
+            jwtSecret,
             {
                 expiresIn: "1h",
             }
         );
 
         return res.status(200).json({
-
             message: "Login successful",
-
             token,
-
         });
 
     } catch (err) {
-
-        console.error(err);
+        console.error("Login Error:", err);
 
         return res.status(500).json({
-
             message: err.message,
-
         });
-
     }
-
 };
 
 module.exports = {
