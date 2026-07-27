@@ -1,7 +1,29 @@
 document.addEventListener("DOMContentLoaded", () => {
-    // Apne HTML elements ki ID verify karein
-    const urlForm = document.getElementById("urlForm") || document.querySelector("form");
-    const urlInput = document.getElementById("urlInput") || document.querySelector("input[type='url']") || document.querySelector("input[type='text']");
+    // ------------------------------------
+    // 1. LOGOUT LOGIC
+    // ------------------------------------
+    const logoutBtn = document.getElementById("logoutBtn");
+
+    if (logoutBtn) {
+        logoutBtn.addEventListener("click", (e) => {
+            e.preventDefault();
+
+            // Clear stored authentication token & user session
+            localStorage.removeItem("token");
+            localStorage.removeItem("user");
+
+            console.log("Logged out successfully");
+
+            // Redirect to login page
+            window.location.href = "/login.html";
+        });
+    }
+
+    // ------------------------------------
+    // 2. URL SHORTENER LOGIC
+    // ------------------------------------
+    const urlForm = document.getElementById("urlForm");
+    const urlInput = document.getElementById("urlInput");
     const resultDiv = document.getElementById("result");
 
     if (!urlForm) {
@@ -10,7 +32,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     urlForm.addEventListener("submit", async (e) => {
-        e.preventDefault(); // Form reload hone se roko
+        e.preventDefault(); // Prevent form page reload
 
         console.log("Form submitted!");
 
@@ -21,7 +43,7 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        // Check if user has token stored from login
+        // Check if JWT token exists in localStorage
         const token = localStorage.getItem("token");
 
         if (!token) {
@@ -50,14 +72,17 @@ document.addEventListener("DOMContentLoaded", () => {
                 
                 if (resultDiv) {
                     resultDiv.innerHTML = `
-                        <div style="margin-top: 15px; padding: 10px; background: #e0f2fe; border-radius: 5px;">
-                            <p style="margin: 0; color: #0369a1;">Short URL created:</p>
+                        <div style="margin-top: 15px; padding: 10px; background: #e0f2fe; border-radius: 5px; word-break: break-all;">
+                            <p style="margin: 0; color: #0369a1; font-weight: 500;">Short URL created:</p>
                             <a href="${shortUrl}" target="_blank" style="font-weight: bold; color: #0284c7;">${shortUrl}</a>
                         </div>
                     `;
                 } else {
                     alert(`Short URL Created: ${shortUrl}`);
                 }
+
+                // Clear input after success
+                urlInput.value = "";
             } else {
                 alert(`Error: ${data.error || "Failed to create short URL"}`);
             }
