@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
     // ------------------------------------
-    // 1. LOGOUT LOGIC
+    // 1. LOGOUT HANDLER
     // ------------------------------------
     const logoutBtn = document.getElementById("logoutBtn");
 
@@ -8,7 +8,7 @@ document.addEventListener("DOMContentLoaded", () => {
         logoutBtn.addEventListener("click", (e) => {
             e.preventDefault();
 
-            // Clear stored authentication token & user session
+            // Clear authentication session
             localStorage.removeItem("token");
             localStorage.removeItem("user");
 
@@ -20,7 +20,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // ------------------------------------
-    // 2. URL SHORTENER LOGIC
+    // 2. URL SHORTENER HANDLER
     // ------------------------------------
     const urlForm = document.getElementById("urlForm");
     const urlInput = document.getElementById("urlInput");
@@ -32,9 +32,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     urlForm.addEventListener("submit", async (e) => {
-        e.preventDefault(); // Prevent form page reload
-
-        console.log("Form submitted!");
+        e.preventDefault(); // Prevent page reload
 
         const longUrl = urlInput ? urlInput.value.trim() : "";
 
@@ -43,7 +41,7 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        // Check if JWT token exists in localStorage
+        // Retrieve JWT token
         const token = localStorage.getItem("token");
 
         if (!token) {
@@ -65,24 +63,23 @@ document.addEventListener("DOMContentLoaded", () => {
             });
 
             const data = await response.json();
-            console.log("Server response:", data);
 
             if (response.ok) {
-                // FIXED: Removed /url/ prefix to match router.get("/:shortCode")
+                // Generates clean short link matching router.get("/:shortCode")
                 const shortUrl = `${window.location.origin}/${data.shortCode}`;
-                
+
                 if (resultDiv) {
                     resultDiv.innerHTML = `
-                        <div style="margin-top: 15px; padding: 10px; background: #e0f2fe; border-radius: 5px; word-break: break-all;">
-                            <p style="margin: 0; color: #0369a1; font-weight: 500;">Short URL created:</p>
-                            <a href="${shortUrl}" target="_blank" style="font-weight: bold; color: #0284c7;">${shortUrl}</a>
+                        <div style="margin-top: 15px; padding: 12px; background: #e0f2fe; border-radius: 6px; word-break: break-all;">
+                            <p style="margin: 0 0 5px 0; color: #0369a1; font-weight: 500;">Short URL created:</p>
+                            <a href="${shortUrl}" target="_blank" style="font-weight: bold; color: #0284c7; text-decoration: underline;">${shortUrl}</a>
                         </div>
                     `;
                 } else {
                     alert(`Short URL Created: ${shortUrl}`);
                 }
 
-                // Clear input after success
+                // Reset input box
                 urlInput.value = "";
             } else {
                 alert(`Error: ${data.error || "Failed to create short URL"}`);
@@ -90,7 +87,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         } catch (err) {
             console.error("Fetch error:", err);
-            alert("Server reach nahi ho raha ya network error hai. Console check karein!");
+            alert("Network error or server unreachable. Please check the console!");
         }
     });
 });

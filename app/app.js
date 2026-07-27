@@ -13,19 +13,22 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Configure Helmet to allow frontend assets and cross-origin requests
+// Configure Helmet to allow frontend assets
 app.use(
     helmet({
         contentSecurityPolicy: false,
     })
 );
 
-// Serve frontend static assets from public directory
+// Serve frontend static assets from public directory FIRST
 app.use(express.static(path.join(__dirname, "../public")));
 
 // API Routes
 app.use("/user", userRoutes);
-app.use("/url", urlRoutes);
+app.use("/url", urlRoutes); // Handles POST /url/shorten
+
+// ROOT REDIRECT ROUTE (Handles GET /:shortCode)
+app.use("/", urlRoutes); 
 
 // Default Root Route -> Redirect to login page
 app.get("/", (req, res) => {
