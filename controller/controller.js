@@ -4,8 +4,9 @@ const Url = require("../model/URL");
 const createShortUrl = async (req, res) => {
     try {
         console.log("BODY:", req.body);
+        console.log("USER FROM AUTH:", req.user); // Log verified user
 
-        let url = req.body.url;
+        let url = req.body ? req.body.url : null;
 
         if (!url) {
             return res.status(400).json({
@@ -13,23 +14,26 @@ const createShortUrl = async (req, res) => {
             });
         }
 
-        // Auto-fix URL prefix if missing http:// or https://
+        // Auto-prefix URL if http/https is missing
         if (!url.startsWith("http://") && !url.startsWith("https://")) {
             url = `https://${url}`;
         }
 
-        // Generate a 6-character random hex string using built-in Node crypto
+        // Safe 6-character random code generator using built-in Node crypto
         const shortCode = crypto.randomBytes(3).toString("hex");
 
+        // Create short URL document
         const newUrl = await Url.create({
             originalUrl: url,
-            shortCode: shortCode
+            shortCode: shortCode,
+            // If your Url model references the logged-in user, attach it safely:
+            ...(req.user && req.user.id ? { userId: req.user.id } : {})
         });
 
         return res.status(201).json(newUrl);
 
     } catch (err) {
-        console.log("Create Short URL Error:", err);
+        console.error("Create Short URL Error:", err);
 
         return res.status(500).json({
             error: err.message || "Internal Server Error"
@@ -41,9 +45,7 @@ const redirectToOriginalUrl = async (req, res) => {
     try {
         const shortCode = req.params.shortCode;
 
-        const url = await Url.findOne({
-            shortCode: shortCode
-        });
+        const url = await Url.findOne({ shortCode });
 
         if (!url) {
             return res.status(404).json({
@@ -54,7 +56,7 @@ const redirectToOriginalUrl = async (req, res) => {
         return res.redirect(url.originalUrl);
 
     } catch (err) {
-        console.log("Redirect Error:", err);
+        console.error("Redirect Error:", err);
 
         return res.status(500).json({
             error: err.message || "Internal Server Error"

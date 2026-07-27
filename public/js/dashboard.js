@@ -1,79 +1,48 @@
-const form = document.getElementById("urlForm");
-const result = document.getElementById("result");
-const logoutBtn = document.getElementById("logoutBtn");
+// Locate your form and input elements from the HTML
+const urlForm = document.getElementById("urlForm"); // Match your HTML form ID
+const urlInput = document.getElementById("urlInput"); // Match your HTML input ID
+const resultDiv = document.getElementById("result"); // Where you want to show the short link
 
-const token = localStorage.getItem("token");
+urlForm.addEventListener("submit", async (e) => {
+    e.preventDefault(); // Stop page refresh
 
-// If user is not logged in
-if (!token) {
-    window.location.href = "login.html";
-}
+    const longUrl = urlInput.value.trim();
+    const token = localStorage.getItem("token"); // Retrieve JWT saved during login
 
-form.addEventListener("submit", async (e) => {
-
-    e.preventDefault();
-
-    const url = document.getElementById("url").value;
+    if (!token) {
+        alert("You must be logged in to shorten URLs.");
+        window.location.href = "/login.html";
+        return;
+    }
 
     try {
-
-        const response = await fetch("http://localhost:3000/url/shorten", {
-
+        const response = await fetch("/url/shorten", {
             method: "POST",
-
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${token}`
+                "Authorization": `Bearer ${token}` // Sends token to your auth middleware
             },
-
-            body: JSON.stringify({
-                url: url
-            })
-
+            body: JSON.stringify({ url: longUrl })
         });
 
         const data = await response.json();
 
         if (response.ok) {
-
-            result.innerHTML = `
-                <h3>Short URL</h3>
-                <a href="http://localhost:3000/url/${data.shortCode}" target="_blank">
-                    http://localhost:3000/url/${data.shortCode}
-                </a>
-                <br><br>
-                <button onclick="copyLink('http://localhost:3000/url/${data.shortCode}')">
-                    Copy
-                </button>
+            console.log("Shortened URL object:", data);
+            
+            // Build full URL for user to copy
+            const shortUrl = `${window.location.origin}/url/${data.shortCode}`;
+            
+            // Display result on screen
+            resultDiv.innerHTML = `
+                <p>Short URL: <a href="${shortUrl}" target="_blank">${shortUrl}</a></p>
             `;
-
         } else {
-
-            alert(data.message || data.error);
-
+            // Show error message returned from backend
+            alert(data.error || "Failed to shorten URL");
         }
-
     } catch (err) {
-
-        console.log(err);
-        alert("Server Error");
-
+        console.error("Network or script error:", err);
+        alert("Something went wrong. Check console.");
     }
-
 });
-
-logoutBtn.addEventListener("click", () => {
-
-    localStorage.removeItem("token");
-
-    window.location.href = "login.html";
-
-});
-
-function copyLink(link) {
-
-    navigator.clipboard.writeText(link);
-
-    alert("Link Copied!");
-
-}
