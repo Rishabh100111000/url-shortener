@@ -2,33 +2,32 @@ const jwt = require("jsonwebtoken");
 
 const auth = (req, res, next) => {
     try {
-        console.log(req.headers);
-
         const authHeader = req.headers.authorization;
 
-        if (!authHeader) {
-            return res.status(401).json({
-                message: "No token provided",
-            });
+        if (!authHeader || !authHeader.startsWith("Bearer ")) {
+            return res.status(401).json({ error: "Access denied. No token provided." });
         }
 
-        console.log("AUTH HEADER =", authHeader);
+        const token = authHeader.split(" ")[1];
 
-        const token = authHeader.replace(/^Bearer\s+/i, "");
+        // Fail safely if JWT_SECRET environment variable is missing
+        const secret = process.env.JWT_SECRET;
+        if (!secret) {
+            console.error("CRITICAL: JWT_SECRET environment variable is not defined!");
+            return res.status(500).json({ error: "Internal server configuration error" });
+        }
 
-        console.log("TOKEN =", token);
-
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-        req.user = decoded;
-
+        // Verify token
+        const decoded = jwt.verify(token, secret);
+        
+        // Attach user payload to request object
+        req.user = decoded; 
+        
         next();
-    } catch (err) {
-        console.log(err);
 
-        return res.status(401).json({
-            message: err.message,
-        });
+    } catch (err) {
+        console.error("Auth Middleware Error:", err.message);
+        return res.status(401).json({ error: "Invalid or expired token." });
     }
 };
 
