@@ -5,8 +5,8 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 const sendEmail = async ({ to, subject, html }) => {
     try {
         const data = await resend.emails.send({
-            // 'onboarding@resend.dev' allows sending test emails immediately
-            from: "URL Shortener <onboarding@resend.dev>",
+            // Updated to your verified sending domain
+            from: "URL Shortener <verify@send.11010101101.me>",
             to: to,
             subject: subject,
             html: html,
