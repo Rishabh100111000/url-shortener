@@ -5,8 +5,8 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 const sendEmail = async ({ to, subject, html }) => {
     try {
         const data = await resend.emails.send({
-            // Updated to your verified sending domain
-            from: "URL Shortener <verify@send.11010101101.me>",
+            // Updated to root domain instead of send. subdomain
+            from: "URL Shortener <verify@11010101101.me>",
             to: to,
             subject: subject,
             html: html,
